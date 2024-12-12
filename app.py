@@ -47,17 +47,19 @@ with ui.nav_panel("Fetched Data"):
     ui.hr()  # Horizontal line for separation
 
     ui.input_slider("slider", "Body Weight (kg):", 1, 150, 60)
-    ui.input_action_button("refresh_btn", "Refresh Data")
+    ui.input_slider("number", "How many sessions do you want to display?:", 1, 10, 1)
 
     ui.hr()  # Add separation before the plot
     ui.h4("Time-Series Data")
+
 
     @render_plotly
     def data_display():
         global shared_data
         try:
+            display_number = input.number()
             # Fetch data
-            data = fetch_thingspeak_data(channel_id, api_key, results=15)
+            data = fetch_thingspeak_data(channel_id, api_key, results=15*display_number)
             
             # Convert to DataFrame and ensure numeric values
             data["field2"] = pd.to_numeric(data["field2"], errors="coerce")
@@ -71,21 +73,6 @@ with ui.nav_panel("Fetched Data"):
 
             data["percent_lifted"] = ((body_weight - data["field5"]) / body_weight) * 100
             shared_data = data
-
-            if input.refresh_btn() > 0:
-                data = fetch_thingspeak_data(channel_id, api_key, results=15)
-                # Convert to DataFrame and ensure numeric values
-                data["field2"] = pd.to_numeric(data["field2"], errors="coerce")
-                data["field5"] = pd.to_numeric(data["field5"], errors="coerce")
-                
-                # Check for valid data
-                if data["field2"].isnull().all() or data["field5"].isnull().all():
-                    raise Exception("No valid data to plot.")
-                
-                body_weight = input.slider()
-
-                data["percent_lifted"] = ((body_weight - data["field5"]) / body_weight) * 100
-                shared_data = data
 
             # Plot the data using Plotly Express
             fig = px.line(
