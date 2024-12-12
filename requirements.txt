@@ -1,0 +1,7 @@
+pandas
+plotly
+shiny
+requests
+joblib
+shinywidgets
+scikit-learn
